@@ -27,5 +27,4 @@ class TradesLoss(AdversarialLoss):
         loss_clean = self._sparse_categorical_cross_entropy(y, logits)
         loss_kl = self._kl_divergence(logits_clipped, logits_adv)
         loss = loss_clean + self._regularization_parameter * loss_kl
-        tf.print("gradient calculated", loss)
         return loss
