@@ -101,7 +101,7 @@ class AdversarialTrainerAWPTensorflow(AdversarialTrainerAWP):
         self._progbar: tf.keras.utils.Progbar
         self._trainer: awp_protocol_tf.AWPProtocolTF
 
-        self._fast_mode = False
+        self._fast_mode = True
 
     def fit(
             self,
@@ -261,26 +261,26 @@ class AdversarialTrainerAWPTensorflow(AdversarialTrainerAWP):
 
         warmup = self._epochs_run < self._warmup
         loss, logits = self._train_step(x_batch, y_batch, warmup=warmup)
+        self._loss_metric.update_state(loss)
 
         if not self._fast_mode:
-            self._callback_list.on_batch_end(self._epochs_run, {"loss": self._loss_metric.result()})
+            self._accuracy_metric.update_state(y_batch, logits)
             if step % 10 == 0:
                 values = [("loss", self._loss_metric.result()), ("accuracy", self._accuracy_metric.result())]
                 self._progbar.update(step + 1, values=values)
+
+            self._callback_list.on_batch_end(self._epochs_run, {"loss": self._loss_metric.result()})
+
         else:
             if step % 10 == 0:
                 values = [("loss", loss)]
                 self._progbar.update(step + 1, values=values)
 
-    @tf.function(jit_compile=True)
     def _train_step(self, x_batch: tf.Tensor, y_batch: tf.Tensor, warmup: bool):
         if warmup:
-            loss, logits = self._warmup_step(x_batch, y_batch)
+            return self._warmup_step(x_batch, y_batch)
         else:
-            loss, logits = self._trainer.batch_process(x_batch, y_batch)
-        self._loss_metric.update_state(loss)
-        self._accuracy_metric.update_state(y_batch, logits)
-        return loss, logits
+            return self._trainer.batch_process(x_batch, y_batch)
 
     @tf.function
     def _warmup_step(self, x_batch: tf.Tensor, y_batch: tf.Tensor):
