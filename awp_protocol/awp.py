@@ -25,6 +25,8 @@ from dataclasses import dataclass, replace
 
 import logging
 
+import time
+
 import keras
 import numpy as np
 from tqdm.auto import tqdm, trange
@@ -206,7 +208,6 @@ class AdversarialTrainerAWPTensorflow(AdversarialTrainerAWP):
             nb_epochs: int = 20,
             scheduler: None = None,
             callbacks: Callback | None = None,
-            warmup: int = 0,
             **kwargs,
     ):
         """
@@ -229,7 +230,7 @@ class AdversarialTrainerAWPTensorflow(AdversarialTrainerAWP):
         if validation_data:
             validation_fn = lambda: self._validate_dataset(*validation_data)
 
-        self._train_loop(iterator_fn, nb_epochs, callbacks, validation_fn, warmup=warmup)
+        self._train_loop(iterator_fn, nb_epochs, callbacks, validation_fn)
 
     def _train_loop(
             self,
@@ -237,7 +238,6 @@ class AdversarialTrainerAWPTensorflow(AdversarialTrainerAWP):
             nb_epochs,
             callbacks: list[tf.keras.callbacks.Callback] | None = None,
             validation_fn=None,
-            warmup: int = 0,
             steps_per_epoch: int | None = None,
     ):
         logger.info("Performing adversarial training with AWP with %s protocol", self._mode)
@@ -273,25 +273,21 @@ class AdversarialTrainerAWPTensorflow(AdversarialTrainerAWP):
             for step, (x_batch, y_batch) in enumerate(iterator):
 
                 callback_list.on_batch_begin(step)
-
+                t_s = time.time()
                 if epoch >= self._warmup:
-                    logs = self._adv_step(x_batch, y_batch, trainer, epoch_logs)
+                    loss, batch_size = self._adv_step(x_batch, y_batch, trainer)
                 else:
-                    logs = self._warmup_step(x_batch, y_batch, epoch_logs)
+                    loss, batch_size = self._warmup_step(x_batch, y_batch)
+                t_e = time.time()
 
-                loss = logs["loss"]
-                acc = logs.get("acc", None)
-                values = [("loss", float(loss))]
-                if acc is not None:
-                    values.append(("acc", float(acc)))
+                # print(f"batch_time = {t_e - t_s}")
+
+                values = [("loss", loss)]
+                # if acc is not None:
+                #     values.append(("acc", float(acc)))
                 progbar.update(step + 1, values=values)
 
                 callback_list.on_batch_end(step, logs)
-
-                # postfix = {"loss": float(logs["loss"])}
-                # if "acc" in logs.keys():
-                #     postfix["acc"] = float(logs["acc"])
-                # pbar.set_postfix(postfix)
 
             logs = {
                 "loss": epoch_logs["train_loss"] / epoch_logs["train_n"],
@@ -304,36 +300,32 @@ class AdversarialTrainerAWPTensorflow(AdversarialTrainerAWP):
 
         callback_list.on_train_end(logs)
 
-    def _warmup_step(self, x_batch, y_batch, epoch_dict):
+    @tf.function
+    def _warmup_step(self, x_batch: tf.Tensor, y_batch: tf.Tensor):
         with tf.GradientTape() as tape:
             logits = self.classifier.model(x_batch, training=True)
             loss = self.classifier.model.loss(y_batch, logits)
         grad = tape.gradient(loss, self.classifier.model.trainable_variables)
         self.classifier.model.optimizer.apply_gradients(zip(grad, self.classifier.model.trainable_variables))
         batch_size = tf.shape(x_batch)[0]
-        epoch_dict["train_n"]  += tf.cast(batch_size, tf.float32)
-        return {
-            "loss": float(loss.numpy()) if tf.is_tensor(loss) else loss
-        }
+        # epoch_dict["train_n"]  += tf.cast(batch_size, tf.float32)
+        return loss, batch_size
 
-    def _adv_step(self, x_batch, y_batch, trainer, epoch_dict):
+    @tf.function
+    def _adv_step(self, x_batch, y_batch, trainer):
         metrics = trainer.batch_process(x_batch, y_batch)
         loss = metrics['loss']
-        ctx: LossContext = metrics['ctx']
-        accuracy = tf.reduce_mean(
-            tf.keras.metrics.sparse_categorical_accuracy(y_batch, ctx.logits_pert)
-        )
+        # ctx: LossContext = metrics['ctx']
+        # accuracy = tf.reduce_mean(
+        #     tf.keras.metrics.sparse_categorical_accuracy(y_batch, ctx.logits_pert)
+        # )
 
         batch_size = tf.shape(x_batch)[0]
+        return loss, batch_size
 
-        epoch_dict["train_loss"] += loss * tf.cast(batch_size, tf.float32)
-        epoch_dict["train_acc"]  += accuracy * tf.cast(batch_size, tf.float32)
-        epoch_dict["train_n"]  += tf.cast(batch_size, tf.float32)
-
-        return {
-            "loss": float(loss.numpy()) if tf.is_tensor(loss) else loss,
-            "acc": float(accuracy.numpy()) if tf.is_tensor(accuracy) else accuracy
-        }
+        # epoch_dict["train_loss"] += loss * tf.cast(batch_size, tf.float32)
+        # epoch_dict["train_acc"]  += accuracy * tf.cast(batch_size, tf.float32)
+        # epoch_dict["train_n"]  += tf.cast(batch_size, tf.float32)
 
     def _dataset_to_iterator(self, dataset):
         for x_batch, y_batch in dataset:
