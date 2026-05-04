@@ -1,8 +1,6 @@
-from typing import Optional, Any, NamedTuple
 from dataclasses import dataclass, replace
 
 import tensorflow as tf
-from sympy import false
 from tensorflow import keras
 
 from awp_protocol.attacks.attack import TensorflowEvasionAttack
@@ -47,10 +45,10 @@ class AWPProtocolTF:
         self._trades_beta = 0.1
 
         temp_attack = _select_attack(attack, classifier)
-        if type(temp_attack) is TensorflowEvasionAttack:
+        if isinstance(temp_attack, TensorflowEvasionAttack):
             self._attack_tf: TensorflowEvasionAttack = temp_attack
             self.batch_process = self._batch_process_tf
-        if type(temp_attack) is art.attacks.attack.EvasionAttack:
+        if isinstance(temp_attack, art.attacks.attack.EvasionAttack):
             self._eager_mode_attack: art.attacks.EvasionAttack = temp_attack
             self.batch_process = self._batch_process_eager
 
@@ -62,7 +60,7 @@ class AWPProtocolTF:
 
 
     def batch_process(self, x_batch: tf.Tensor, y_batch: tf.Tensor):
-        ...
+        print("placeholder")
 
     def _batch_process_eager(self, x_batch: tf.Tensor, y_batch: tf.Tensor) -> dict:
         self._proxy_classifier.copy_originator_state(self._classifier)
