@@ -1,32 +1,34 @@
 from typing import Any
 
 import tensorflow as tf
-from tensorflow import keras
+
+from dataclasses import dataclass, replace
 
 from awp_protocol.attacks.attack import TensorflowEvasionAttack
 
 
-def get_default_params() -> dict:
-    return {
-        'perturbation_bound': 8 / 255,
-        'pgd_step': 10,
-        'pgd_step_size': 0.1
-    }
+@dataclass(frozen=True)
+class PGDParams:
+    perturbation_bound: float = 8 /255
+    pgd_step: int = 10
+    pgd_step_size: float = 0.1
 
 
 class PGDAttack(TensorflowEvasionAttack):
     def __init__(
             self,
-            model: keras.Model,
-            params: dict[str, object] | Any = None
+            model: tf.keras.Model,
+            params: PGDParams | None = None,
+            **overrides
     ):
         super().__init__(model)
         self._dtype = tf.float32
+        self._params = params or PGDParams()
+        self._params = replace(self._params, **overrides)
 
-        params = _set_params(params)
-        self._perturbation_bound: float = tf.cast(params['perturbation_bound'], self._dtype)
-        self._pgd_step: int = params['pgd_step']
-        self._pgd_step_size: float = tf.cast(params['pgd_step_size'], self._dtype)
+        self._perturbation_bound: tf.Tensor = tf.constant(self._params.perturbation_bound, dtype=self._dtype)
+        self._pgd_step: int = self._params.pgd_step
+        self._pgd_step_size: tf.Tensor = tf.constant(self._params.pgd_step_size, dtype=self._dtype)
 
     @tf.function
     def generate(self, x_batch: tf.Tensor, y_batch: tf.Tensor) -> tf.Tensor:
@@ -54,12 +56,3 @@ class PGDAttack(TensorflowEvasionAttack):
         x_adv = x + perturbation
         x_adv = tf.clip_by_value(x_adv, 0.0, 1.0)
         return x_adv
-
-
-def _set_params(training_params: dict[str, Any] | Any) -> dict[str, Any]:
-    if training_params is None:
-        return get_default_params()
-    else:
-        params_dict = get_default_params()
-        params_dict.update(training_params)
-        return params_dict

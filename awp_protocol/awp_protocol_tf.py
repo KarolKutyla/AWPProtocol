@@ -63,6 +63,7 @@ class AWPProtocolTF:
             ctx = self._proxy_forward_pass(x_batch, y_batch, x_pert)
             loss = self._adversarial_loss.calculate(ctx)
         gradient = tape.gradient(loss, self._proxy_calculator.trainable_variables)
+        print("XD")
         self._update_classifier(gradient)
         return loss, ctx.logits_pert
 

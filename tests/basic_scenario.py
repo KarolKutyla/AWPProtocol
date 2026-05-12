@@ -1,6 +1,6 @@
 import tensorflow as tf
 from keras.src.optimizers import SGD
-
+from keras.src.optimizers.schedules import learning_rate_schedule
 
 from actions import models, datasets, attacks
 
@@ -13,8 +13,7 @@ print(f"tf executing eagerly: {tf.executing_eagerly()}")
 train_ds, tf_test_ds, _, _ = datasets.load_cifar_dataset()
 model = models.load_tensorflow_resnet()
 
-pgd_params = pgd.get_default_params()
-pgd_attack = pgd.PGDAttack(model, pgd_params)
+pgd_attack = pgd.PGDAttack(model)
 
 x_batch, y_batch = next(iter(train_ds))
 x_adv = pgd_attack.generate(x_batch, y_batch)
@@ -52,13 +51,14 @@ input_shape = model.inputs[0].shape[1:]
 
 
 proxy_model = awp.clone_classifier(model)
-optimizer = tf.keras.optimizers.SGD(learning_rate=0.1, momentum=0.0, nesterov=False)
-model.optimizer = optimizer
-
 schedule = tf.keras.optimizers.schedules.PiecewiseConstantDecay(
     boundaries=[50, 100],
     values=[0.1, 0.01, 0.001]
 )
+optimizer = tf.keras.optimizers.SGD(learning_rate=0.1, momentum=0.0, nesterov=False, learning_rate_schedule=schedule)
+model.optimizer = optimizer
+
+
 
 attack = pgd.PGDAttack(proxy_model)
 

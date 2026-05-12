@@ -229,7 +229,7 @@ class AdversarialTrainerAWPTensorflow:
                 values = [("loss", self._loss_metric.result())]
                 self._progbar.update(step + 1, values=values)
 
-    @tf.function
+    @tf.function(jit_compile=True)
     def _train_step(self, x_batch: tf.Tensor, y_batch: tf.Tensor, warmup: bool):
         if warmup:
             loss, logits =  self._warmup_step(x_batch, y_batch)
