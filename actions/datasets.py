@@ -16,13 +16,13 @@ def load_cifar_dataset():
         tf.data.Dataset.from_tensor_slices((x_train, y_train))
         .shuffle(50000)
         .map(preprocess, num_parallel_calls=tf.data.AUTOTUNE)
-        .batch(64)
+        .batch(64, drop_remainder=True)
         .prefetch(tf.data.AUTOTUNE)
     )
     tf_test_ds = (
         tf.data.Dataset.from_tensor_slices((x_test, y_test))
         .map(lambda x, y: (tf.cast(x, dtype=tf.float32) / 255.0, y), num_parallel_calls=tf.data.AUTOTUNE)
-        .batch(64)
+        .batch(64, drop_remainder=True)
         .prefetch(tf.data.AUTOTUNE)
     )
 
@@ -74,7 +74,7 @@ def load_mnist_dataset():
     tf_x_test = x_test.astype(np.float32)
 
     tf_train_ds = tf.data.Dataset.from_tensor_slices((tf_x_train, y_train))
-    tf_train_ds = tf_train_ds.shuffle(10000).batch(64).prefetch(tf.data.AUTOTUNE)
+    tf_train_ds = tf_train_ds.shuffle(10000).batch(64, drop_remainder=True).prefetch(tf.data.AUTOTUNE)
     tf_train_ds = tf_train_ds.cache().prefetch(tf.data.AUTOTUNE)
 
     torch_train_loader = _convert_to_torch_loader(x_train, y_train, shuffle=True)
