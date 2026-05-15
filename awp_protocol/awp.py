@@ -36,10 +36,15 @@ from awp_protocol.attacks.attack import TensorflowEvasionAttack
 from awp_protocol.callbacks.progbar_logger import ProgbarLogger
 from awp_protocol.callbacks.checkpoint_callback import EpochCheckpoint
 
+from awp_protocol.losses.loss import AdversarialLoss
+from awp_protocol.losses.trades_loss import TradesLoss
+from awp_protocol.losses.adversarial_categorical_cross_entropy import AdversarialSparseCategoricalCrossEntropy
+
 logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class Params:
+    mode: str = "trades"
     protocol_params: batch_processor.AWPParams = batch_processor.AWPParams()
 
 class AdversarialTrainerAWPTensorflow:
@@ -55,6 +60,7 @@ class AdversarialTrainerAWPTensorflow:
             proxy_classifier: tf.keras.Model,
             attack: TensorflowEvasionAttack,
             warmup: int = 0,
+            adversarial_loss: AdversarialLoss | None = None,
             trained_layers: tuple[bool, ...] | None = None,
             params: Params | None = None,
             **overrides
@@ -81,6 +87,7 @@ class AdversarialTrainerAWPTensorflow:
         self._attack: TensorflowEvasionAttack = attack
         self._warmup: int
         self._apply_wp: bool
+        self._adversarial_loss: AdversarialLoss | None = adversarial_loss
         self._tracked_layers: tuple[bool, ...] | None = trained_layers
 
         self._steps_per_epoch: int | None = None
@@ -238,14 +245,18 @@ class AdversarialTrainerAWPTensorflow:
 
 
     def _init_training_object(self):
-        attack = pgd.PGDAttack(self._proxy_classifier)
+        attack = self._attack or pgd.PGDAttack(self._proxy_classifier)
+        adversarial_loss = self._adversarial_loss or _select_adversarial_loss(self._params.mode)
         tracked_layers = self._tracked_layers or select_default_trained_layers_tf(self._proxy_classifier)
+
         return batch_processor.BatchProcessor(
             self._classifier,
             self._proxy_classifier,
-            tracked_layers,
             attack,
-            self._params.protocol_params)
+            adversarial_loss,
+            tracked_layers=tracked_layers,
+            params=self._params.protocol_params
+        )
 
 
 def clone_classifier(originator: tf.keras.Model) -> tf.keras.Model:
@@ -253,5 +264,16 @@ def clone_classifier(originator: tf.keras.Model) -> tf.keras.Model:
     proxy_classifier.set_weights(originator.get_weights())
     return proxy_classifier
 
+
 def select_default_trained_layers_tf(classifier: tf.keras.Model) -> tuple[bool, ...]:
         return tuple('kernel' in variable.name for variable in classifier.trainable_variables)
+
+
+def _select_adversarial_loss(mode: str) -> AdversarialLoss:
+    if mode == "pgd":
+        return AdversarialSparseCategoricalCrossEntropy()
+    if mode == "trades":
+        return TradesLoss()
+    else:
+        raise Exception("Mode not provided! Chose pgd or trades.")
+
