@@ -21,6 +21,9 @@ class AWPParams:
     weight_constraint: float = 5.0e-3
     step_size: float = weight_constraint / (awp_steps * alternate_iteration)
 
+    def calc_step_size(self):
+        return self.weight_constraint / (self.awp_steps * self.alternate_iteration)
+
 
 
 class BatchProcessor:
@@ -38,6 +41,7 @@ class BatchProcessor:
         self._dtype : tf.dtypes.DType = classifier.weights[0].dtype
         self._params = params or AWPParams()
         self._params = replace(self._params, **overrides)
+        self._params = replace(self._params, step_size=self._params.calc_step_size())
 
         self._classifier: tf.keras.Model = classifier
         _validate_optimizer(self._classifier)

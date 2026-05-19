@@ -11,7 +11,7 @@ tf.config.run_functions_eagerly(False)
 
 train_ds, tf_test_ds = datasets.load_cifar_dataset()
 steps_per_epoch = train_ds.cardinality()
-model = models.load_tensorflow_resnet(steps_per_epoch)
+model = models.load_preact_resnet_18(steps_per_epoch)
 
 attack_params = pgd.PGDParams(perturbation_bound= 128/255, pgd_step=10, pgd_step_size= 15/255, norm="l2")
 pgd_attack = pgd.PGDAttack(model, attack_params)

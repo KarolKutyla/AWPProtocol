@@ -14,13 +14,13 @@ def load_cifar_dataset_with_preprocessing():
         tf.data.Dataset.from_tensor_slices((x_train, y_train))
         .shuffle(50000)
         .map(transform_train_from_research_paper, num_parallel_calls=tf.data.AUTOTUNE)
-        .batch(128, drop_remainder=True)
+        .batch(128, drop_remainder=False)
         .prefetch(tf.data.AUTOTUNE)
     )
     tf_test_ds = (
         tf.data.Dataset.from_tensor_slices((x_test, y_test))
         .map(lambda x, y: (tf.cast(x, dtype=tf.float32) / 255.0, y), num_parallel_calls=tf.data.AUTOTUNE)
-        .batch(128, drop_remainder=True)
+        .batch(128, drop_remainder=False)
         .prefetch(tf.data.AUTOTUNE)
     )
 
@@ -33,13 +33,13 @@ def load_cifar_dataset():
         tf.data.Dataset.from_tensor_slices((x_train, y_train))
         .shuffle(50000)
         .map(transform_train_from_research_paper, num_parallel_calls=tf.data.AUTOTUNE)
-        .batch(128, drop_remainder=True)
+        .batch(128, drop_remainder=False)
         .prefetch(tf.data.AUTOTUNE)
     )
     tf_test_ds = (
         tf.data.Dataset.from_tensor_slices((x_test, y_test))
         .map(lambda x, y: (tf.cast(x, dtype=tf.float32) / 255.0, y), num_parallel_calls=tf.data.AUTOTUNE)
-        .batch(128, drop_remainder=True)
+        .batch(128, drop_remainder=False)
         .prefetch(tf.data.AUTOTUNE)
     )
 

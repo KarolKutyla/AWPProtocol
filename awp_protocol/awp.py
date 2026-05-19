@@ -216,7 +216,6 @@ class AdversarialTrainerAWPTensorflow:
 
         batch_results = self._train_step(x_batch, y_batch, warmup=warmup)
         self._update_metrics(y_batch, batch_results)
-
         self._callback_list.on_batch_end(step, self._collect_train_logs())
 
     def _collect_train_logs(self):
