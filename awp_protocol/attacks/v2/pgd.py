@@ -49,9 +49,22 @@ class PGDAttack(TensorflowEvasionAttack):
 
     def _generate_l2(self, x_batch: tf.Tensor, y_batch: tf.Tensor) -> tf.Tensor:
         x_adv = self._random_sample(x_batch)
-        for i in range(self._pgd_step):
-            x_adv = self._pgd_l2_iteration(x_batch, x_adv, y_batch)
+
+        i0 = tf.constant(0, dtype=tf.int8)
+
+        def cond(i, x):
+            return i < tf.constant(self._pgd_step, dtype=tf.int8)
+
+        def body(i, x):
+            x = self._pgd_l2_iteration(x_batch, x_adv, y_batch)
+            return i + 1, x
+
+        tf.while_loop(cond, body, [i0, x_adv])
+
         return x_adv
+        # for i in range(self._pgd_step):
+        #     x_adv = self._pgd_l2_iteration(x_batch, x_adv, y_batch)
+        # return x_adv
 
 
     def _pgd_l2_iteration(self, x: tf.Tensor, x_adv: tf.Tensor, y: tf.Tensor) -> tf.Tensor:

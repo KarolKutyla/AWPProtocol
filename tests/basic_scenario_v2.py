@@ -3,8 +3,8 @@ import tensorflow as tf
 from actions import models, datasets_v2, attacks
 
 from awp_protocol.attacks.v2 import pgd
-from awp_protocol import awp_no_proxy
-from awp_protocol import batch_processor_no_proxy
+from awp_protocol import awp_no_proxy as awp
+from awp_protocol import batch_processor_no_proxy as batch_processor
 from awp_protocol.callbacks import checkpoint_callback, epoch_logger
 
 tf.config.run_functions_eagerly(False)
