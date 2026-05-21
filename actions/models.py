@@ -79,7 +79,7 @@ def load_tensorflow_resnet_101(steps_per_epoch):
 
 
 def load_tensorflow_resnet_18_v2(steps_per_epoch):
-    backbone = keras_cv.models.ResNet101V2Backbone(
+    backbone = keras_cv.models.ResNet18V2Backbone(
         include_rescaling=False,
         input_shape=(32, 32, 3)
     )
