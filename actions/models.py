@@ -106,7 +106,7 @@ def load_wide_resnet(steps_per_epoch):
         values=[0.1, 0.01, 0.001]
     )
     optimizer = tf.keras.optimizers.SGD(learning_rate=schedule, momentum=0.0, nesterov=False)
-    model.compile(loss=loss, optimizer=optimizer)
+    model.compile(loss=loss, optimizer=optimizer, jit_compile=True)
     optimizer.build(model.trainable_variables)
     model.name = "wide_resnet_28_10"
     return model
