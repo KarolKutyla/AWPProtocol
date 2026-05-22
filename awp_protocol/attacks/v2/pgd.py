@@ -28,15 +28,16 @@ class PGDAttack(TensorflowEvasionAttack):
         self._pgd_step = tf.constant(self._params.pgd_step, dtype=tf.int32)
         self._perturbation_bound: tf.Tensor = tf.constant(self._params.perturbation_bound * 2.0, dtype=self._dtype)
         self._pgd_step_size: tf.Tensor = tf.constant(self._params.pgd_step_size * 2.0, dtype=self._dtype)
+        self._norm = self._params.norm
 
 
     @tf.function(reduce_retracing=True)
     def generate(self, x_batch: tf.Tensor, y_batch: tf.Tensor) -> tf.Tensor:
-        if self._params.norm == "linf":
+        if self._norm == "linf":
             return self._generate_inf(x_batch, y_batch)
-        if self._params.norm == "l2":
+        if self._norm == "l2":
             return self._generate_l2(x_batch, y_batch)
-        if self._params.norm == "l1":
+        if self._norm == "l1":
             raise Exception("Norm l1 not implemented")
         raise Exception(f"Unknown norm type: {self._params.norm}. Should be one of: linf, l2, l1.")
 
