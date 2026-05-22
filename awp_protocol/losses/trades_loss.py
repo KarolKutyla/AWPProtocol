@@ -4,7 +4,7 @@ from awp_protocol.losses.loss import AdversarialLoss
 from awp_protocol.losses.loss_context import LossContext
 
 class TradesLoss(AdversarialLoss):
-    def __init__(self, regularization_parameter: float = 1.0, eps: float = 1e-3):
+    def __init__(self, regularization_parameter: float = 3.0, eps: float = 1e-3):
         super().__init__()
         self._value_instead_of_zero = eps
         if regularization_parameter < 0.0:
@@ -25,7 +25,8 @@ class TradesLoss(AdversarialLoss):
 
 def _kld_loss(logits, logits_adv):
     p = tf.nn.softmax(logits)
+    log_p = tf.nn.log_softmax(logits)
     log_q = tf.nn.log_softmax(logits_adv)
     return tf.reduce_mean(
-        tf.reduce_sum(p * (tf.math.log(p + 1e-12) - log_q), axis=-1)
+        tf.reduce_sum(p * (log_p - log_q), axis=-1)
     )

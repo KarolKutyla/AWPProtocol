@@ -173,7 +173,7 @@ def load_tensorflow_resnet_50_v2(steps_per_epoch):
         boundaries=[100 * steps_per_epoch, 150 * steps_per_epoch],
         values=[0.1, 0.01, 0.001]
     )
-    optimizer = tf.keras.optimizers.SGD(learning_rate=schedule, momentum=0.0, nesterov=False)
+    optimizer = tf.keras.optimizers.SGD(learning_rate=schedule, momentum=0.9, nesterov=False)
     keras_resnet.compile(loss=loss, optimizer=optimizer)
     optimizer.build(keras_resnet.trainable_variables)
     keras_resnet.name = "resnet_50v2"
