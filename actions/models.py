@@ -109,18 +109,15 @@ def load_wide_resnet(steps_per_epoch):
     return model
 
 def _load_tensorflow_resnet_18_v2(steps_per_epoch):
-    backbone = keras_cv.models.ResNet18V2Backbone(
-        include_rescaling=False,
-        input_shape=(32, 32, 3)
-    )
-
-
-    pool3 = layers.GlobalAveragePooling2D()(backbone.outputs[0])  # Shape: (Batch, 256)
-    pool4 = layers.GlobalAveragePooling2D()(backbone.outputs[1])  # Shape: (Batch, 512)
-    combined_features = layers.Concatenate()([pool3, pool4])
-    x = tf.keras.layers.GlobalAveragePooling2D()(combined_features)
-    x = tf.keras.layers.ReLU()(x)
-    x = layers.Dropout(0.3)(x)
+    backbone = keras_cv.models.ResNet18V2Backbone(include_rescaling=False, input_shape=(32, 32, 3))
+    # print(backbone.output)
+    # print(backbone.outputs)
+    # pool3 = layers.GlobalAveragePooling2D()(backbone.outputs[0])
+    # pool4 = layers.GlobalAveragePooling2D()(backbone.outputs[1])
+    # combined_features = layers.Concatenate()([pool3, pool4])
+    x = tf.keras.layers.GlobalAveragePooling2D()(backbone.output)
+    # x = tf.keras.layers.ReLU()(x)
+    # x = layers.Dropout(0.3)(x)
     outputs = tf.keras.layers.Dense(10)(x)
 
 
@@ -183,3 +180,5 @@ def load_tensorflow_resnet_50_v2(steps_per_epoch):
     keras_resnet.name = "resnet_50v2"
 
     return keras_resnet
+
+load_tensorflow_resnet_18_v2_for_awp_training(5)
