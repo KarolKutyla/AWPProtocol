@@ -127,7 +127,10 @@ class BatchProcessor:
             self._weight_calculator.calculate_weight_perturbations(gradient)
             return i + 1
 
-        _, = tf.while_loop(cond, body, [i0], parallel_iterations=1, back_prop=False)
+        _, = tf.nest.map_structure(
+            tf.stop_gradient,
+            tf.while_loop(cond, body, [i0], parallel_iterations=1)
+        )
 
 
     def _calc_loss_context(self, x_batch: tf.Tensor, y_batch: tf.Tensor, x_pert: tf.Tensor) -> LossContext:
