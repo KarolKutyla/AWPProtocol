@@ -250,7 +250,7 @@ class AdversarialTrainerAWPTensorflow:
 
     def _train_step(self, x_batch: tf.Tensor, y_batch: tf.Tensor, warmup: bool, enable_adversarial=True) -> tuple[tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor]:
         if not enable_adversarial:
-            return self._non_adversarial_step()
+            return self._non_adversarial_step(x_batch, y_batch)
         if warmup:
             return self._trainer.adv_train_step(x_batch, y_batch)
         else:
