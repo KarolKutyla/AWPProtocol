@@ -134,7 +134,7 @@ def _load_tensorflow_resnet_18_v2(steps_per_epoch):
     return model
 
 
-def load_tensorflow_resnet_50_v2_for_normal_training(steps_per_epoch):
+def load_tensorflow_resnet_18_v2_for_normal_training(steps_per_epoch):
     model = _load_tensorflow_resnet_18_v2(steps_per_epoch)
     model.name = "resnet_18v2_normal"
     return model
