@@ -30,12 +30,11 @@ def load_tensorflow_resnet(steps_per_epoch):
     return keras_resnet
 
 
-def load_tensorflow_resnet_152(steps_per_epoch):
+def load_tensorflow_resnet_152_v2(steps_per_epoch):
     backbone = keras_cv.models.ResNet152V2Backbone(
         include_rescaling=False,
-        input_shape=(224, 224, 3)
+        input_shape=(32, 32, 3)
     )
-
     x = backbone.outputs[0]
     x = tf.keras.layers.GlobalAveragePooling2D()(x)
     outputs = tf.keras.layers.Dense(10)(x)
@@ -46,11 +45,10 @@ def load_tensorflow_resnet_152(steps_per_epoch):
         boundaries=[100 * steps_per_epoch, 150 * steps_per_epoch],
         values=[0.1, 0.01, 0.001]
     )
-    optimizer = tf.keras.optimizers.SGD(learning_rate=schedule, momentum=0.0, nesterov=False)
+    optimizer = tf.keras.optimizers.SGD(learning_rate=schedule, momentum=0.9, nesterov=False, weight_decay=5e-4)
     keras_resnet.compile(loss=loss, optimizer=optimizer)
-    optimizer.build(keras_resnet.trainable_variables)
-    keras_resnet.name = "resnet_152v2"
-    # print(keras_resnet.summary())
+
+    keras_resnet.name = "resnet_152v2_awp"
 
     return keras_resnet
 
@@ -75,7 +73,6 @@ def load_tensorflow_resnet_101(steps_per_epoch):
     keras_resnet.compile(loss=loss, optimizer=optimizer)
     optimizer.build(keras_resnet.trainable_variables)
     keras_resnet.name = "resnet_101v2"
-    # print(keras_resnet.summary())
 
     return keras_resnet
 
@@ -110,18 +107,8 @@ def load_wide_resnet(steps_per_epoch):
 
 def _load_tensorflow_resnet_18_v2(steps_per_epoch):
     backbone = keras_cv.models.ResNet18V2Backbone(include_rescaling=False, input_shape=(32, 32, 3))
-    # print(backbone.output)
-    # print(backbone.outputs)
-    # pool3 = layers.GlobalAveragePooling2D()(backbone.outputs[0])
-    # pool4 = layers.GlobalAveragePooling2D()(backbone.outputs[1])
-    # combined_features = layers.Concatenate()([pool3, pool4])
     x = tf.keras.layers.GlobalAveragePooling2D()(backbone.output)
-    # x = tf.keras.layers.ReLU()(x)
-    # x = layers.Dropout(0.3)(x)
     outputs = tf.keras.layers.Dense(10)(x)
-
-
-    # 4. Concatenate both feature streams into a single vector
 
     model = tf.keras.Model(backbone.inputs, outputs)
     loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
@@ -161,9 +148,8 @@ def load_tensorflow_resnet_18_v2_for_awp_training_with_alternate_iterations(step
 def load_tensorflow_resnet_50_v2(steps_per_epoch):
     backbone = keras_cv.models.ResNet50V2Backbone(
         include_rescaling=False,
-        input_shape=(224, 224, 3)
+        input_shape=(32, 32, 3)
     )
-
     x = backbone.outputs[0]
     x = tf.keras.layers.GlobalAveragePooling2D()(x)
     outputs = tf.keras.layers.Dense(10)(x)
@@ -181,4 +167,4 @@ def load_tensorflow_resnet_50_v2(steps_per_epoch):
 
     return keras_resnet
 
-load_tensorflow_resnet_18_v2_for_awp_training(5)
+# load_tensorflow_resnet_152_v2(5).summary()
