@@ -11,5 +11,5 @@ dependencies = [
     "tensorflow",
 ]
 
-[tool.setuptools.packages.find]
-where = ["."]
+[tool.setuptools]
+packages = ["awp_tf"]

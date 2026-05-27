@@ -7,13 +7,13 @@ import tensorflow as tf
 from tensorflow.keras.callbacks import Callback
 
 import batch_processor
-from attacks.attack import TensorflowEvasionAttack
-from callbacks.progbar_logger import ProgbarLogger
-from callbacks.checkpoint_callback import EpochCheckpoint
+from awp_tf.attacks.attack import TensorflowEvasionAttack
+from awp_tf.callbacks.progbar_logger import ProgbarLogger
+from awp_tf.callbacks.checkpoint_callback import EpochCheckpoint
 
-from losses.loss import AdversarialLoss
-from losses.trades_loss import TradesLoss
-from losses.adversarial_categorical_cross_entropy import AdversarialSparseCategoricalCrossEntropy
+from awp_tf.losses.loss import AdversarialLoss
+from awp_tf.losses.trades_loss import TradesLoss
+from awp_tf.losses.adversarial_categorical_cross_entropy import AdversarialSparseCategoricalCrossEntropy
 
 
 @dataclass(frozen=True)

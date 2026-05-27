@@ -1,7 +1,7 @@
 import tensorflow as tf
 
-from losses.loss import AdversarialLoss
-from losses.loss_context import LossContext
+from awp_tf.losses.loss import AdversarialLoss
+from awp_tf.losses.loss_context import LossContext
 
 
 class AdversarialSparseCategoricalCrossEntropy(AdversarialLoss):

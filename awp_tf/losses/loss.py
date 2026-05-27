@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 import tensorflow as tf
-from losses.loss_context import LossContext
+from awp_tf.losses.loss_context import LossContext
 
 
 class AdversarialLoss(ABC):
