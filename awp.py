@@ -1,25 +1,3 @@
-# MIT License
-#
-# Copyright (C) The Adversarial Robustness Toolbox (ART) Authors 2023
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
-# documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
-# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
-# persons to whom the Software is furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
-# Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-# WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-"""
-This is a TensorFlow implementation of the Adversarial Weight Perturbation (AWP) protocol.
-
-| Paper link: https://proceedings.neurips.cc/paper/2020/file/1ef91c212e30e14bf125e9374262401f-Paper.pdf
-"""
 from __future__ import absolute_import, division, print_function, unicode_literals, annotations
 
 import time
@@ -28,14 +6,14 @@ from dataclasses import dataclass, replace
 import tensorflow as tf
 from tensorflow.keras.callbacks import Callback
 
-from awp_protocol import batch_processor
-from awp_protocol.attacks.attack import TensorflowEvasionAttack
-from awp_protocol.callbacks.progbar_logger import ProgbarLogger
-from awp_protocol.callbacks.checkpoint_callback import EpochCheckpoint
+import batch_processor
+from attacks.attack import TensorflowEvasionAttack
+from callbacks.progbar_logger import ProgbarLogger
+from callbacks.checkpoint_callback import EpochCheckpoint
 
-from awp_protocol.losses.loss import AdversarialLoss
-from awp_protocol.losses.trades_loss import TradesLoss
-from awp_protocol.losses.adversarial_categorical_cross_entropy import AdversarialSparseCategoricalCrossEntropy
+from losses.loss import AdversarialLoss
+from losses.trades_loss import TradesLoss
+from losses.adversarial_categorical_cross_entropy import AdversarialSparseCategoricalCrossEntropy
 
 
 @dataclass(frozen=True)
@@ -44,11 +22,6 @@ class Params:
     protocol_params: batch_processor.AWPParams = batch_processor.AWPParams()
 
 class Trainer:
-    """
-    Class performing adversarial training following Adversarial Weight Perturbation (AWP) protocol.
-
-    | Paper link: https://proceedings.neurips.cc/paper/2020/file/1ef91c212e30e14bf125e9374262401f-Paper.pdf
-    """
 
     def __init__(
             self,
@@ -60,18 +33,6 @@ class Trainer:
             params: Params | None = None,
             **overrides
     ):
-        """
-        Create an :class:`.AdversarialTrainerAWPPyTorch` instance.
-
-        :param classifier: Model to train adversarially.
-        :param proxy_classifier: Model for adversarial weight perturbation.
-        :param attack: attack to use for data augmentation in adversarial training.
-        :param mode: mode determining the optimization objective of base adversarial training and weight perturbation
-               step
-        :param gamma: The scaling factor controlling norm of weight perturbation relative to model parameters' norm.
-        :param beta: The scaling factor controlling tradeoff between clean loss and adversarial loss for TRADES protocol
-        :param warmup: The number of epochs after which weight perturbation is applied
-        """
         self._fast_mode = True
 
         self._params = params or Params()
@@ -148,7 +109,6 @@ class Trainer:
             nb_epochs,
             validation_dataset=None,
             callbacks: list[tf.keras.callbacks.Callback] | None = None,
-            steps_per_epoch: int = None,
             enable_adversarial=True
     ):
         callbacks = callbacks or []

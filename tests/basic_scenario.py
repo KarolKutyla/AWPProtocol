@@ -2,10 +2,10 @@ import tensorflow as tf
 
 from actions import models, datasets, attacks
 
-from awp_protocol.attacks.v1 import pgd
-from awp_protocol import awp
-from awp_protocol import batch_processor
-from awp_protocol.callbacks import checkpoint_callback, epoch_logger
+from attacks.v1 import pgd
+import awp
+import batch_processor
+from callbacks import epoch_logger, checkpoint_callback
 
 tf.config.run_functions_eagerly(False)
 

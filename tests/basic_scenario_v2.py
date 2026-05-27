@@ -1,11 +1,11 @@
 import tensorflow as tf
 
-from actions import models, datasets_v2, attacks
+from actions import models, datasets_v2
 
-from awp_protocol.attacks.v2 import pgd
-from awp_protocol import awp as awp
-from awp_protocol import batch_processor as batch_processor
-from awp_protocol.callbacks import checkpoint_callback, epoch_logger
+from attacks.v2 import pgd
+import awp as awp
+import batch_processor as batch_processor
+from callbacks import epoch_logger, checkpoint_callback
 
 tf.config.run_functions_eagerly(False)
 
@@ -13,7 +13,7 @@ train_ds, tf_test_ds = datasets_v2.load_cifar_dataset()
 steps_per_epoch = train_ds.cardinality()
 model = models.load_wide_resnet(steps_per_epoch)
 
-attack_params = pgd.PGDParams(perturbation_bound=128/255, pgd_step=10, pgd_step_size=15/255, norm="l2")
+attack_params = pgd.PGDParams(perturbation_bound=128 / 255, pgd_step=10, pgd_step_size=15 / 255, norm="l2")
 pgd_attack = pgd.PGDAttack(model, attack_params)
 x_batch, y_batch = next(iter(train_ds))
 x_adv = pgd_attack.generate(x_batch, y_batch)

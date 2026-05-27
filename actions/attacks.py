@@ -1,4 +1,4 @@
-from awp_protocol.attacks.attack import TensorflowEvasionAttack
+from attacks import TensorflowEvasionAttack
 import numpy as np
 from matplotlib import pyplot as plt
 

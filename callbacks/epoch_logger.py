@@ -3,7 +3,8 @@ import datetime
 
 import tensorflow as tf
 
-from awp_protocol import awp
+import awp
+
 
 def _datetime_now() -> str:
     d = datetime.datetime.now()

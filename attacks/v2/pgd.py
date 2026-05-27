@@ -2,7 +2,7 @@ import tensorflow as tf
 
 from dataclasses import dataclass, replace
 
-from awp_protocol.attacks.attack import TensorflowEvasionAttack
+from attacks.attack import TensorflowEvasionAttack
 
 
 @dataclass(frozen=True)

@@ -1,7 +1,7 @@
 import tensorflow as tf
 
-from awp_protocol.losses.loss import AdversarialLoss
-from awp_protocol.losses.loss_context import LossContext
+from losses.loss import AdversarialLoss
+from losses.loss_context import LossContext
 
 class TradesLoss(AdversarialLoss):
     def __init__(self, regularization_parameter: float = 1.0):
