@@ -6,7 +6,7 @@ from dataclasses import dataclass, replace
 import tensorflow as tf
 from tensorflow.keras.callbacks import Callback
 
-from awp_tf import batch_processor
+from awp_tf.batch_processor import BatchProcessor, AWPParams
 from awp_tf.attacks.attack import TensorflowEvasionAttack
 from awp_tf.callbacks.progbar_logger import ProgbarLogger
 from awp_tf.callbacks.checkpoint_callback import EpochCheckpoint
@@ -18,7 +18,7 @@ from awp_tf.losses.adversarial_categorical_cross_entropy import AdversarialSpars
 @dataclass(frozen=True)
 class Params:
     mode: str = "trades"
-    protocol_params: batch_processor.AWPParams = batch_processor.AWPParams()
+    protocol_params: AWPParams = AWPParams()
 
 class Trainer:
 
@@ -46,7 +46,7 @@ class Trainer:
 
         self._steps_per_epoch: int | None = None
         self._epochs_run = 0
-        self._trainer: batch_processor.BatchProcessor
+        self._trainer: BatchProcessor
         self._warmup = warmup
 
         self._progbar: tf.keras.utils.Progbar
@@ -230,7 +230,7 @@ class Trainer:
         adversarial_loss = self._adversarial_loss or _select_adversarial_loss(self._params.mode)
         tracked_layers = self._tracked_layers or select_default_trained_layers_tf(self._classifier)
 
-        return batch_processor.BatchProcessor(
+        return BatchProcessor(
             self._classifier,
             attack,
             adversarial_loss,
