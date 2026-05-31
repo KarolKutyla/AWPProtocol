@@ -12,4 +12,4 @@ dependencies = [
 ]
 
 [tool.setuptools.packages.find]
-packages = ["awp_tf*"]
+include = ["awp_tf*"]
