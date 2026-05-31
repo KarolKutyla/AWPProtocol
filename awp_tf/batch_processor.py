@@ -4,7 +4,7 @@ import tensorflow as tf
 from tensorflow import keras
 
 from awp_tf.attacks.attack import TensorflowEvasionAttack
-from weight_calculator import WeightCalculator, WeightParams
+from awp_tf.weight_calculator import WeightCalculator, WeightParams
 
 from awp_tf.losses.loss import AdversarialLoss
 from awp_tf.losses.loss_context import LossContext
